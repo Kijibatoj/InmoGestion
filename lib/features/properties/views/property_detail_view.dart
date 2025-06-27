@@ -6,8 +6,7 @@ import 'dart:io';
 import '../../../providers/property_provider.dart';
 import '../models/property_model.dart';
 import '../../shared/widgets/common_app_bar.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/utils/responsive_utils.dart';
+import '../../../routes/app_routes.dart';
 
 class PropertyDetailView extends StatefulWidget {
   final int propertyId;
@@ -68,20 +67,16 @@ class _PropertyDetailViewState extends State<PropertyDetailView> {
     return Scaffold(
       appBar: CommonAppBar(
         title: 'Detalle de Propiedad',
-        showBackButton: true,
-        showHomeButton: false,
         actions: [
           if (_property != null) ...[
             IconButton(
-              icon: const Icon(Icons.edit, color: Colors.white),
+              icon: const Icon(Icons.edit),
               onPressed: () =>
                   context.go('/property-edit/${widget.propertyId}'),
-              tooltip: 'Editar propiedad',
             ),
             IconButton(
-              icon: const Icon(Icons.delete, color: Colors.white),
+              icon: const Icon(Icons.delete),
               onPressed: () => _showDeleteDialog(),
-              tooltip: 'Eliminar propiedad',
             ),
           ],
         ],
@@ -91,518 +86,261 @@ class _PropertyDetailViewState extends State<PropertyDetailView> {
   }
 
   Widget _buildBody() {
-    final responsivePadding = ResponsiveUtils.getResponsivePadding(context);
-    final maxWidth = ResponsiveUtils.getMaxContentWidth(context);
-
     if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryRed),
-            ),
-            SizedBox(height: ResponsiveUtils.getVerticalSpacing(context)),
+            Icon(Icons.error, size: 64, color: Colors.red[300]),
+            const SizedBox(height: 16),
             Text(
-              'Cargando propiedad...',
-              style: TextStyle(
-                fontSize: ResponsiveUtils.getResponsiveFontSize(
-                  context,
-                  baseFontSize: 16,
-                ),
-                color: AppColors.primaryRed,
-              ),
+              _errorMessage!,
+              style: const TextStyle(color: Colors.red),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadProperty,
+              child: const Text('Reintentar'),
             ),
           ],
         ),
       );
     }
 
-    if (_errorMessage != null) {
-      return Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: maxWidth * 0.8),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error,
-                size: ResponsiveUtils.getImageSize(
-                  context,
-                  mobile: 64,
-                  tablet: 80,
-                  desktop: 96,
-                ),
-                color: Colors.red[300],
-              ),
-              SizedBox(height: ResponsiveUtils.getVerticalSpacing(context)),
-              Text(
-                _errorMessage!,
-                style: TextStyle(
-                  color: Colors.red,
-                  fontSize: ResponsiveUtils.getResponsiveFontSize(
-                    context,
-                    baseFontSize: 16,
-                  ),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: ResponsiveUtils.getVerticalSpacing(context)),
-              ElevatedButton(
-                onPressed: _loadProperty,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryRed,
-                  foregroundColor: Colors.white,
-                ),
-                child: Text('Reintentar'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
     if (_property == null) {
-      return Center(
-        child: Text(
-          'Propiedad no encontrada',
-          style: TextStyle(
-            fontSize: ResponsiveUtils.getResponsiveFontSize(
-              context,
-              baseFontSize: 18,
-            ),
-          ),
-        ),
-      );
+      return const Center(child: Text('Propiedad no encontrada'));
     }
 
-    return Center(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: maxWidth),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(responsivePadding),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildImageSection(),
-              SizedBox(height: ResponsiveUtils.getVerticalSpacing(context)),
-              _buildInfoSection(),
-              SizedBox(height: ResponsiveUtils.getVerticalSpacing(context)),
-              _buildLocationSection(),
-              SizedBox(height: ResponsiveUtils.getVerticalSpacing(context)),
-              _buildFeaturesSection(),
-              SizedBox(height: ResponsiveUtils.getVerticalSpacing(context)),
-              _buildDescriptionSection(),
-              SizedBox(
-                height: ResponsiveUtils.getVerticalSpacing(
-                  context,
-                  mobile: 32,
-                  tablet: 40,
-                  desktop: 48,
-                ),
-              ),
-            ],
-          ),
-        ),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildImageSection(),
+          _buildInfoSection(),
+          _buildLocationSection(),
+          _buildFeaturesSection(),
+          _buildDescriptionSection(),
+          const SizedBox(height: 32),
+        ],
       ),
     );
   }
 
   Widget _buildImageSection() {
-    final borderRadius = ResponsiveUtils.getBorderRadius(context);
-
     return Container(
-      height: ResponsiveUtils.getImageSize(
-        context,
-        mobile: 250,
-        tablet: 300,
-        desktop: 350,
-      ),
+      height: 250,
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(borderRadius),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: _property!.imagePaths.isNotEmpty
-            ? Stack(
-                children: [
-                  PageView.builder(
-                    itemCount: _property!.imagePaths.length,
-                    itemBuilder: (context, index) {
-                      return Image.file(
-                        File(_property!.imagePaths[index]),
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return _buildPlaceholderImage();
-                        },
-                      );
-                    },
+      decoration: BoxDecoration(color: Colors.grey[200]),
+      child: _property!.imagePaths.isNotEmpty
+          ? Stack(
+              children: [
+                PageView.builder(
+                  itemCount: _property!.imagePaths.length,
+                  itemBuilder: (context, index) {
+                    return Image.file(
+                      File(_property!.imagePaths[index]),
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return _buildPlaceholderImage();
+                      },
+                    );
+                  },
+                ),
+                if (_property!.imagePaths.length > 1) ...[
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.photo_library,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${_property!.imagePaths.length}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  if (_property!.imagePaths.length > 1) ...[
-                    Positioned(
-                      top: ResponsiveUtils.getResponsivePadding(context) * 0.5,
-                      right:
-                          ResponsiveUtils.getResponsivePadding(context) * 0.5,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: ResponsiveUtils.getHorizontalSpacing(
-                            context,
-                            mobile: 8,
-                            tablet: 10,
-                            desktop: 12,
-                          ),
-                          vertical: ResponsiveUtils.getVerticalSpacing(
-                            context,
-                            mobile: 4,
-                            tablet: 6,
-                            desktop: 8,
-                          ),
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.6),
-                          borderRadius: BorderRadius.circular(borderRadius),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.photo_library,
-                              color: Colors.white,
-                              size: ResponsiveUtils.getResponsiveFontSize(
-                                context,
-                                baseFontSize: 16,
-                              ),
-                            ),
-                            SizedBox(width: 4),
-                            Text(
-                              '${_property!.imagePaths.length}',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: ResponsiveUtils.getResponsiveFontSize(
-                                  context,
-                                  baseFontSize: 12,
-                                ),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                  Positioned(
+                    bottom: 12,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Text(
+                        'Desliza para ver más imágenes',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          backgroundColor: Colors.black.withOpacity(0.6),
                         ),
                       ),
                     ),
-                    Positioned(
-                      bottom:
-                          ResponsiveUtils.getResponsivePadding(context) * 0.5,
-                      left: 0,
-                      right: 0,
-                      child: Center(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: ResponsiveUtils.getHorizontalSpacing(
-                              context,
-                            ),
-                            vertical: ResponsiveUtils.getVerticalSpacing(
-                              context,
-                              mobile: 4,
-                              tablet: 6,
-                              desktop: 8,
-                            ),
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.6),
-                            borderRadius: BorderRadius.circular(
-                              borderRadius * 0.5,
-                            ),
-                          ),
-                          child: Text(
-                            'Desliza para ver más imágenes',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: ResponsiveUtils.getResponsiveFontSize(
-                                context,
-                                baseFontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ],
-              )
-            : _buildPlaceholderImage(),
-      ),
+              ],
+            )
+          : _buildPlaceholderImage(),
     );
   }
 
   Widget _buildPlaceholderImage() {
     return Container(
       color: Colors.grey[200],
-      child: Center(
-        child: Icon(
-          Icons.home_work_outlined,
-          size: ResponsiveUtils.getImageSize(
-            context,
-            mobile: 60,
-            tablet: 80,
-            desktop: 100,
-          ),
-          color: Colors.grey[400],
-        ),
+      child: const Center(
+        child: Icon(Icons.home_work, size: 80, color: Colors.grey),
       ),
     );
   }
 
   Widget _buildInfoSection() {
-    final verticalSpacing = ResponsiveUtils.getVerticalSpacing(context);
-    final isLandscape = ResponsiveUtils.isLandscape(context);
-
-    return Container(
-      padding: EdgeInsets.all(ResponsiveUtils.getResponsivePadding(context)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(
-          ResponsiveUtils.getBorderRadius(context),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Título y precio en fila o columna según el espacio
-          if (isLandscape || !ResponsiveUtils.isMobile(context))
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: _buildTitle()),
-                SizedBox(width: ResponsiveUtils.getHorizontalSpacing(context)),
-                _buildPrice(),
-              ],
-            )
-          else ...[
-            _buildTitle(),
-            SizedBox(height: verticalSpacing),
-            _buildPrice(),
-          ],
-
-          SizedBox(height: verticalSpacing),
-
-          _buildPropertyType(),
+          Text(
+            _property!.title,
+            style: Theme.of(
+              context,
+            ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _property!.formattedPrice,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: Theme.of(context).primaryColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              _property!.propertyTypeDisplayName,
+              style: TextStyle(
+                color: Theme.of(context).primaryColor,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTitle() {
-    return Text(
-      _property!.title,
-      style: TextStyle(
-        fontSize: ResponsiveUtils.getResponsiveFontSize(
-          context,
-          baseFontSize: 24,
-        ),
-        fontWeight: FontWeight.bold,
-        color: AppColors.primaryRed,
-      ),
-    );
-  }
-
-  Widget _buildPrice() {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: ResponsiveUtils.getHorizontalSpacing(context),
-        vertical: ResponsiveUtils.getVerticalSpacing(
-          context,
-          mobile: 8,
-          tablet: 10,
-          desktop: 12,
-        ),
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.primaryRed.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(
-          ResponsiveUtils.getBorderRadius(context),
-        ),
-        border: Border.all(color: AppColors.primaryRed.withOpacity(0.3)),
-      ),
-      child: Text(
-        '\$${_property!.price.toStringAsFixed(0)}',
-        style: TextStyle(
-          fontSize: ResponsiveUtils.getResponsiveFontSize(
-            context,
-            baseFontSize: 20,
-          ),
-          fontWeight: FontWeight.bold,
-          color: AppColors.primaryRed,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPropertyType() {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: ResponsiveUtils.getHorizontalSpacing(
-          context,
-          mobile: 12,
-          tablet: 16,
-          desktop: 20,
-        ),
-        vertical: ResponsiveUtils.getVerticalSpacing(
-          context,
-          mobile: 6,
-          tablet: 8,
-          desktop: 10,
-        ),
-      ),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(
-          ResponsiveUtils.getBorderRadius(context),
-        ),
-      ),
-      child: Text(
-        _property!.propertyType,
-        style: TextStyle(
-          fontSize: ResponsiveUtils.getResponsiveFontSize(
-            context,
-            baseFontSize: 14,
-          ),
-          fontWeight: FontWeight.w500,
-          color: Colors.grey[700],
-        ),
       ),
     );
   }
 
   Widget _buildLocationSection() {
-    return _buildSection(
-      title: 'Ubicación',
-      icon: Icons.location_on,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            _property!.address,
-            style: TextStyle(
-              fontSize: ResponsiveUtils.getResponsiveFontSize(
-                context,
-                baseFontSize: 16,
+          Row(
+            children: [
+              Icon(Icons.location_on, color: Theme.of(context).primaryColor),
+              const SizedBox(width: 8),
+              Text(
+                'Ubicación',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
-              fontWeight: FontWeight.w500,
-            ),
+            ],
           ),
-          SizedBox(height: ResponsiveUtils.getVerticalSpacing(context) * 0.5),
-          Text(
-            '${_property!.city}, ${_property!.state}',
-            style: TextStyle(
-              fontSize: ResponsiveUtils.getResponsiveFontSize(
-                context,
-                baseFontSize: 14,
-              ),
-              color: Colors.grey[600],
-            ),
-          ),
+          const SizedBox(height: 8),
+          Text(_property!.address),
+          Text('${_property!.city}, ${_property!.state}'),
         ],
       ),
     );
   }
 
   Widget _buildFeaturesSection() {
-    final features = <Widget>[];
-
-    if (_property!.bedrooms != null) {
-      features.add(
-        _buildFeatureItem(
-          Icons.bed_outlined,
-          '${_property!.bedrooms} Habitaciones',
-        ),
-      );
+    if (_property!.bedrooms == null &&
+        _property!.bathrooms == null &&
+        _property!.area == null) {
+      return const SizedBox.shrink();
     }
 
-    if (_property!.bathrooms != null) {
-      features.add(
-        _buildFeatureItem(
-          Icons.bathroom_outlined,
-          '${_property!.bathrooms} Baños',
-        ),
-      );
-    }
-
-    if (_property!.area != null) {
-      features.add(
-        _buildFeatureItem(
-          Icons.square_foot_outlined,
-          '${_property!.area!.toStringAsFixed(0)} m²',
-        ),
-      );
-    }
-
-    if (features.isEmpty) return SizedBox.shrink();
-
-    return _buildSection(
-      title: 'Características',
-      icon: Icons.home,
-      child: Wrap(
-        spacing: ResponsiveUtils.getHorizontalSpacing(context),
-        runSpacing: ResponsiveUtils.getVerticalSpacing(context) * 0.5,
-        children: features,
-      ),
-    );
-  }
-
-  Widget _buildFeatureItem(IconData icon, String text) {
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: ResponsiveUtils.getHorizontalSpacing(
-          context,
-          mobile: 12,
-          tablet: 16,
-          desktop: 20,
-        ),
-        vertical: ResponsiveUtils.getVerticalSpacing(
-          context,
-          mobile: 8,
-          tablet: 10,
-          desktop: 12,
-        ),
-      ),
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primaryRed.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(
-          ResponsiveUtils.getBorderRadius(context),
-        ),
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            size: ResponsiveUtils.getResponsiveFontSize(
-              context,
-              baseFontSize: 16,
-            ),
-            color: AppColors.primaryRed,
-          ),
-          SizedBox(width: 8),
           Text(
-            text,
-            style: TextStyle(
-              fontSize: ResponsiveUtils.getResponsiveFontSize(
-                context,
-                baseFontSize: 14,
-              ),
-              fontWeight: FontWeight.w500,
-              color: AppColors.primaryRed,
-            ),
+            'Características',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              if (_property!.bedrooms != null) ...[
+                Expanded(
+                  child: _FeatureItem(
+                    icon: Icons.bed,
+                    label: 'Habitaciones',
+                    value: '${_property!.bedrooms}',
+                  ),
+                ),
+              ],
+              if (_property!.bathrooms != null) ...[
+                Expanded(
+                  child: _FeatureItem(
+                    icon: Icons.bathroom,
+                    label: 'Baños',
+                    value: '${_property!.bathrooms}',
+                  ),
+                ),
+              ],
+              if (_property!.area != null) ...[
+                Expanded(
+                  child: _FeatureItem(
+                    icon: Icons.square_foot,
+                    label: 'Área',
+                    value: '${_property!.area} m²',
+                  ),
+                ),
+              ],
+            ],
           ),
         ],
       ),
@@ -611,78 +349,30 @@ class _PropertyDetailViewState extends State<PropertyDetailView> {
 
   Widget _buildDescriptionSection() {
     if (_property!.description == null || _property!.description!.isEmpty) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
 
-    return _buildSection(
-      title: 'Descripción',
-      icon: Icons.description,
-      child: Text(
-        _property!.description!,
-        style: TextStyle(
-          fontSize: ResponsiveUtils.getResponsiveFontSize(
-            context,
-            baseFontSize: 16,
-          ),
-          height: 1.4,
-          color: Colors.grey[700],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSection({
-    required String title,
-    required IconData icon,
-    required Widget child,
-  }) {
     return Container(
-      padding: EdgeInsets.all(ResponsiveUtils.getResponsivePadding(context)),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(
-          ResponsiveUtils.getBorderRadius(context),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(
-                icon,
-                color: AppColors.primaryRed,
-                size: ResponsiveUtils.getResponsiveFontSize(
-                  context,
-                  baseFontSize: 20,
-                ),
-              ),
-              SizedBox(
-                width: ResponsiveUtils.getHorizontalSpacing(context) * 0.5,
-              ),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: ResponsiveUtils.getResponsiveFontSize(
-                    context,
-                    baseFontSize: 18,
-                  ),
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primaryRed,
-                ),
-              ),
-            ],
+          Text(
+            'Descripción',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: ResponsiveUtils.getVerticalSpacing(context)),
-          child,
+          const SizedBox(height: 8),
+          Text(
+            _property!.description!,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
         ],
       ),
     );
@@ -692,29 +382,85 @@ class _PropertyDetailViewState extends State<PropertyDetailView> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Eliminar Propiedad'),
-        content: Text('¿Estás seguro de que quieres eliminar esta propiedad?'),
+        title: const Text('Eliminar Propiedad'),
+        content: Text(
+          '¿Estás seguro de que quieres eliminar "${_property!.title}"?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar'),
+            child: const Text('Cancelar'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
+
               final propertyProvider = Provider.of<PropertyProvider>(
                 context,
                 listen: false,
               );
-              await propertyProvider.deleteProperty(widget.propertyId);
-              if (mounted) {
-                context.go('/');
+              final success = await propertyProvider.deleteProperty(
+                _property!.id!,
+              );
+
+              if (context.mounted) {
+                if (success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Propiedad eliminada'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                  context.go(AppRoutes.homeProperties);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Error al eliminar propiedad'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               }
             },
-            child: Text('Eliminar', style: TextStyle(color: Colors.red)),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Eliminar'),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _FeatureItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _FeatureItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Icon(icon, size: 32, color: Theme.of(context).primaryColor),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        Text(
+          label,
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+        ),
+      ],
     );
   }
 }

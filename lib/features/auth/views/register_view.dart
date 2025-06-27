@@ -7,7 +7,6 @@ import '../../../providers/auth_provider.dart';
 import '../../../core/utils/form_validators.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/utils/responsive_utils.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -65,447 +64,208 @@ class _RegisterViewState extends State<RegisterView> {
 
   @override
   Widget build(BuildContext context) {
-    final responsivePadding = ResponsiveUtils.getResponsivePadding(context);
-    final maxWidth = ResponsiveUtils.getMaxContentWidth(context);
-    final isLandscape = ResponsiveUtils.isLandscape(context);
-    final verticalSpacing = ResponsiveUtils.getVerticalSpacing(context);
-
     return Scaffold(
-      appBar: CommonAppBar(
-        title: 'Crear Cuenta',
-        showHomeButton: false,
-        showBackButton: true,
-      ),
+      appBar: CommonAppBar(title: 'Crear Cuenta', showHomeButton: false),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: maxWidth),
-            child: SingleChildScrollView(
-              padding: EdgeInsets.all(responsivePadding),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SizedBox(height: isLandscape ? 10 : 20),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppConstants.defaultPadding),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 20),
 
-                    Icon(
-                      Icons.person_add,
-                      size: ResponsiveUtils.getImageSize(
-                        context,
-                        mobile: 60,
-                        tablet: 75,
-                        desktop: 90,
-                      ),
-                      color: AppColors.primaryRed,
-                    ),
+                Icon(
+                  Icons.person_add,
+                  size: 60,
+                  color: Theme.of(context).primaryColor,
+                ),
 
-                    SizedBox(height: verticalSpacing),
+                const SizedBox(height: 20),
 
-                    Text(
-                      'Únete a InmoGestion',
-                      style: TextStyle(
-                        fontSize: ResponsiveUtils.getResponsiveFontSize(
-                          context,
-                          baseFontSize: 28,
-                        ),
-                        fontWeight: FontWeight.bold,
+                Text(
+                  'Únete a InmoGestion',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 10),
+
+                Text(
+                  'Crea tu cuenta y comienza a gestionar propiedades',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 30),
+
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nombre completo',
+                    hintText: 'Ingresa tu nombre completo',
+                    prefixIcon: Icon(Icons.person, color: AppColors.primaryRed),
+                  ),
+                  validator: (value) =>
+                      FormValidators.validateRequired(value, 'Nombre'),
+                ),
+
+                const SizedBox(height: 16),
+
+                TextFormField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    hintText: 'Ingresa tu email',
+                    prefixIcon: Icon(Icons.email, color: AppColors.primaryRed),
+                  ),
+                  validator: FormValidators.validateEmail,
+                ),
+
+                const SizedBox(height: 16),
+
+                TextFormField(
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    labelText: 'Teléfono (opcional)',
+                    hintText: 'Ingresa tu teléfono',
+                    prefixIcon: Icon(Icons.phone, color: AppColors.primaryRed),
+                  ),
+                  validator: (value) {
+                    if (value != null && value.isNotEmpty) {
+                      return FormValidators.validatePhone(value);
+                    }
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
+                    labelText: 'Contraseña',
+                    hintText: 'Crea una contraseña segura',
+                    prefixIcon: Icon(Icons.lock, color: AppColors.primaryRed),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                         color: AppColors.primaryRed,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    SizedBox(
-                      height: ResponsiveUtils.getVerticalSpacing(
-                        context,
-                        mobile: 10,
-                        tablet: 15,
-                        desktop: 20,
-                      ),
-                    ),
-
-                    Text(
-                      'Crea tu cuenta y comienza a gestionar propiedades',
-                      style: TextStyle(
-                        fontSize: ResponsiveUtils.getResponsiveFontSize(
-                          context,
-                          baseFontSize: 14,
-                        ),
-                        color: Colors.grey[600],
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    SizedBox(
-                      height: ResponsiveUtils.getVerticalSpacing(
-                        context,
-                        mobile: 30,
-                        tablet: 35,
-                        desktop: 40,
-                      ),
-                    ),
-
-                    TextFormField(
-                      controller: _nameController,
-                      style: TextStyle(
-                        fontSize: ResponsiveUtils.getResponsiveFontSize(
-                          context,
-                          baseFontSize: 16,
-                        ),
-                      ),
-                      decoration: InputDecoration(
-                        labelText: 'Nombre completo',
-                        hintText: 'Ingresa tu nombre completo',
-                        prefixIcon: Icon(
-                          Icons.person,
-                          color: AppColors.primaryRed,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            ResponsiveUtils.getBorderRadius(context),
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            ResponsiveUtils.getBorderRadius(context),
-                          ),
-                          borderSide: BorderSide(
-                            color: AppColors.primaryRed,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                      validator: (value) =>
-                          FormValidators.validateRequired(value, 'Nombre'),
-                    ),
-
-                    SizedBox(height: verticalSpacing),
-
-                    TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      style: TextStyle(
-                        fontSize: ResponsiveUtils.getResponsiveFontSize(
-                          context,
-                          baseFontSize: 16,
-                        ),
-                      ),
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                        hintText: 'Ingresa tu email',
-                        prefixIcon: Icon(
-                          Icons.email,
-                          color: AppColors.primaryRed,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            ResponsiveUtils.getBorderRadius(context),
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            ResponsiveUtils.getBorderRadius(context),
-                          ),
-                          borderSide: BorderSide(
-                            color: AppColors.primaryRed,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                      validator: FormValidators.validateEmail,
-                    ),
-
-                    SizedBox(height: verticalSpacing),
-
-                    TextFormField(
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      style: TextStyle(
-                        fontSize: ResponsiveUtils.getResponsiveFontSize(
-                          context,
-                          baseFontSize: 16,
-                        ),
-                      ),
-                      decoration: InputDecoration(
-                        labelText: 'Teléfono (opcional)',
-                        hintText: 'Ingresa tu teléfono',
-                        prefixIcon: Icon(
-                          Icons.phone,
-                          color: AppColors.primaryRed,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            ResponsiveUtils.getBorderRadius(context),
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            ResponsiveUtils.getBorderRadius(context),
-                          ),
-                          borderSide: BorderSide(
-                            color: AppColors.primaryRed,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value != null && value.isNotEmpty) {
-                          return FormValidators.validatePhone(value);
-                        }
-                        return null;
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
                       },
                     ),
+                  ),
+                  validator: FormValidators.validatePassword,
+                ),
 
-                    SizedBox(height: verticalSpacing),
+                const SizedBox(height: 16),
 
-                    TextFormField(
-                      controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      style: TextStyle(
-                        fontSize: ResponsiveUtils.getResponsiveFontSize(
-                          context,
-                          baseFontSize: 16,
-                        ),
-                      ),
-                      decoration: InputDecoration(
-                        labelText: 'Contraseña',
-                        hintText: 'Crea una contraseña segura',
-                        prefixIcon: Icon(
-                          Icons.lock,
-                          color: AppColors.primaryRed,
-                        ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: AppColors.primaryRed,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            ResponsiveUtils.getBorderRadius(context),
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            ResponsiveUtils.getBorderRadius(context),
-                          ),
-                          borderSide: BorderSide(
-                            color: AppColors.primaryRed,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                      validator: FormValidators.validatePassword,
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  obscureText: _obscureConfirmPassword,
+                  decoration: InputDecoration(
+                    labelText: 'Confirmar contraseña',
+                    hintText: 'Confirma tu contraseña',
+                    prefixIcon: Icon(
+                      Icons.lock_outline,
+                      color: AppColors.primaryRed,
                     ),
-
-                    SizedBox(height: verticalSpacing),
-
-                    TextFormField(
-                      controller: _confirmPasswordController,
-                      obscureText: _obscureConfirmPassword,
-                      style: TextStyle(
-                        fontSize: ResponsiveUtils.getResponsiveFontSize(
-                          context,
-                          baseFontSize: 16,
-                        ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureConfirmPassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: AppColors.primaryRed,
                       ),
-                      decoration: InputDecoration(
-                        labelText: 'Confirmar contraseña',
-                        hintText: 'Confirma tu contraseña',
-                        prefixIcon: Icon(
-                          Icons.lock_outline,
-                          color: AppColors.primaryRed,
-                        ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscureConfirmPassword
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: AppColors.primaryRed,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscureConfirmPassword =
-                                  !_obscureConfirmPassword;
-                            });
-                          },
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            ResponsiveUtils.getBorderRadius(context),
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            ResponsiveUtils.getBorderRadius(context),
-                          ),
-                          borderSide: BorderSide(
-                            color: AppColors.primaryRed,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                      validator: _validateConfirmPassword,
+                      onPressed: () {
+                        setState(() {
+                          _obscureConfirmPassword = !_obscureConfirmPassword;
+                        });
+                      },
                     ),
+                  ),
+                  validator: _validateConfirmPassword,
+                ),
 
-                    SizedBox(
-                      height: ResponsiveUtils.getVerticalSpacing(
-                        context,
-                        mobile: 24,
-                        tablet: 30,
-                        desktop: 36,
-                      ),
-                    ),
+                const SizedBox(height: 24),
 
-                    Consumer<AuthProvider>(
-                      builder: (context, authProvider, child) {
-                        if (authProvider.errorMessage != null) {
-                          return Container(
-                            padding: EdgeInsets.all(responsivePadding * 0.75),
-                            margin: EdgeInsets.only(bottom: verticalSpacing),
-                            decoration: BoxDecoration(
-                              color: Colors.red.shade50,
-                              borderRadius: BorderRadius.circular(
-                                ResponsiveUtils.getBorderRadius(context),
+                Consumer<AuthProvider>(
+                  builder: (context, authProvider, child) {
+                    if (authProvider.errorMessage != null) {
+                      return Container(
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.red.shade300),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.error, color: Colors.red.shade600),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                authProvider.errorMessage!,
+                                style: TextStyle(color: Colors.red.shade600),
                               ),
-                              border: Border.all(color: Colors.red.shade300),
                             ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.error,
-                                  color: Colors.red.shade600,
-                                  size: ResponsiveUtils.getResponsiveFontSize(
-                                    context,
-                                    baseFontSize: 20,
+                          ],
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+
+                Consumer<AuthProvider>(
+                  builder: (context, authProvider, child) {
+                    return SizedBox(
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: authProvider.isLoading ? null : _register,
+                        child: authProvider.isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
                                   ),
                                 ),
-                                SizedBox(width: responsivePadding * 0.5),
-                                Expanded(
-                                  child: Text(
-                                    authProvider.errorMessage!,
-                                    style: TextStyle(
-                                      color: Colors.red.shade600,
-                                      fontSize:
-                                          ResponsiveUtils.getResponsiveFontSize(
-                                            context,
-                                            baseFontSize: 14,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-
-                    Consumer<AuthProvider>(
-                      builder: (context, authProvider, child) {
-                        return SizedBox(
-                          height: ResponsiveUtils.getVerticalSpacing(
-                            context,
-                            mobile: 50,
-                            tablet: 55,
-                            desktop: 60,
-                          ),
-                          child: ElevatedButton(
-                            onPressed: authProvider.isLoading
-                                ? null
-                                : _register,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primaryRed,
-                              foregroundColor: Colors.white,
-                              padding: EdgeInsets.symmetric(
-                                vertical: ResponsiveUtils.getVerticalSpacing(
-                                  context,
-                                  mobile: 16,
-                                  tablet: 18,
-                                  desktop: 20,
-                                ),
-                                horizontal: responsivePadding,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  ResponsiveUtils.getBorderRadius(context),
-                                ),
-                              ),
-                              textStyle: TextStyle(
-                                fontSize: ResponsiveUtils.getResponsiveFontSize(
-                                  context,
-                                  baseFontSize: 16,
-                                ),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            child: authProvider.isLoading
-                                ? SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white,
-                                      ),
-                                    ),
-                                  )
-                                : Text('Crear Cuenta'),
-                          ),
-                        );
-                      },
-                    ),
-
-                    SizedBox(
-                      height: ResponsiveUtils.getVerticalSpacing(
-                        context,
-                        mobile: 20,
-                        tablet: 25,
-                        desktop: 30,
+                              )
+                            : const Text('Crear Cuenta'),
                       ),
-                    ),
+                    );
+                  },
+                ),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '¿Ya tienes cuenta? ',
-                          style: TextStyle(
-                            fontSize: ResponsiveUtils.getResponsiveFontSize(
-                              context,
-                              baseFontSize: 14,
-                            ),
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () => context.go('/login'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: AppColors.primaryRed,
-                            textStyle: TextStyle(
-                              fontSize: ResponsiveUtils.getResponsiveFontSize(
-                                context,
-                                baseFontSize: 14,
-                              ),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          child: Text('Inicia sesión aquí'),
-                        ),
-                      ],
-                    ),
+                const SizedBox(height: 20),
 
-                    SizedBox(height: isLandscape ? 10 : 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('¿Ya tienes cuenta? '),
+                    TextButton(
+                      onPressed: () => context.go('/login'),
+                      child: const Text('Inicia sesión'),
+                    ),
                   ],
                 ),
-              ),
+              ],
             ),
           ),
         ),
