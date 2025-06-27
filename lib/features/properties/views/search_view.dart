@@ -82,11 +82,13 @@ class _SearchViewState extends State<SearchView> {
         children: [
           // Panel de búsqueda mejorado
           Container(
-            margin: EdgeInsets.all(responsivePadding * 0.8),
+            margin: EdgeInsets.all(responsivePadding),
             padding: EdgeInsets.all(responsivePadding),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(
+                ResponsiveUtils.getBorderRadius(context),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
@@ -145,6 +147,12 @@ class _SearchViewState extends State<SearchView> {
                 // Campo de búsqueda principal
                 TextField(
                   controller: _searchController,
+                  style: TextStyle(
+                    fontSize: ResponsiveUtils.getResponsiveFontSize(
+                      context,
+                      baseFontSize: 16,
+                    ),
+                  ),
                   decoration: InputDecoration(
                     hintText: 'Buscar propiedades por título, ubicación...',
                     prefixIcon: Icon(Icons.search, color: AppColors.primaryRed),
@@ -161,10 +169,14 @@ class _SearchViewState extends State<SearchView> {
                       ),
                     ),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(
+                        ResponsiveUtils.getBorderRadius(context),
+                      ),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(
+                        ResponsiveUtils.getBorderRadius(context),
+                      ),
                       borderSide: BorderSide(
                         color: AppColors.primaryRed,
                         width: 2,
@@ -176,18 +188,35 @@ class _SearchViewState extends State<SearchView> {
                   onSubmitted: (_) => _performSearch(),
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(
+                  height: ResponsiveUtils.getVerticalSpacing(
+                    context,
+                    mobile: 20,
+                    tablet: 24,
+                    desktop: 28,
+                  ),
+                ),
 
                 // Filtros mejorados
                 Text(
                   'Filtros',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: ResponsiveUtils.getResponsiveFontSize(
+                      context,
+                      baseFontSize: 16,
+                    ),
                     fontWeight: FontWeight.w600,
                     color: AppColors.primaryRed,
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(
+                  height: ResponsiveUtils.getVerticalSpacing(
+                    context,
+                    mobile: 12,
+                    tablet: 16,
+                    desktop: 20,
+                  ),
+                ),
 
                 ResponsiveUtils.shouldUseSingleColumn(context)
                     ? Column(
@@ -235,12 +264,17 @@ class _SearchViewState extends State<SearchView> {
                           ),
                           strokeWidth: 3,
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: ResponsiveUtils.getVerticalSpacing(context),
+                        ),
                         Text(
                           'Buscando propiedades...',
                           style: TextStyle(
                             color: AppColors.primaryRed,
-                            fontSize: 16,
+                            fontSize: ResponsiveUtils.getResponsiveFontSize(
+                              context,
+                              baseFontSize: 16,
+                            ),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -252,91 +286,68 @@ class _SearchViewState extends State<SearchView> {
                 if (propertyProvider.properties.isEmpty) {
                   return LayoutBuilder(
                     builder: (context, constraints) {
-                      // Calcular tamaños responsivos basados en el espacio disponible
-                      final availableHeight = constraints.maxHeight;
-                      final iconSize = availableHeight > 400 ? 80.0 : 60.0;
-                      final titleFontSize = availableHeight > 400 ? 24.0 : 20.0;
-                      final subtitleFontSize = availableHeight > 400
-                          ? 16.0
-                          : 14.0;
-                      final padding = availableHeight > 400 ? 32.0 : 16.0;
-                      final spacing = availableHeight > 400 ? 24.0 : 16.0;
-
                       return SingleChildScrollView(
                         child: ConstrainedBox(
                           constraints: BoxConstraints(
                             minHeight: constraints.maxHeight,
                           ),
-                          child: IntrinsicHeight(
+                          child: Center(
                             child: Padding(
-                              padding: EdgeInsets.all(padding),
+                              padding: EdgeInsets.all(responsivePadding),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Flexible(
-                                    child: Container(
-                                      padding: EdgeInsets.all(iconSize * 0.25),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primaryRed.withOpacity(
-                                          0.1,
-                                        ),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        Icons.search_off,
-                                        size: iconSize,
-                                        color: AppColors.primaryRed.withOpacity(
-                                          0.7,
-                                        ),
-                                      ),
+                                  Icon(
+                                    Icons.search_off,
+                                    size: ResponsiveUtils.getImageSize(
+                                      context,
+                                      mobile: 80,
+                                      tablet: 100,
+                                      desktop: 120,
+                                    ),
+                                    color: Colors.grey[400],
+                                  ),
+                                  SizedBox(
+                                    height: ResponsiveUtils.getVerticalSpacing(
+                                      context,
+                                      mobile: 24,
+                                      tablet: 30,
+                                      desktop: 36,
                                     ),
                                   ),
-                                  SizedBox(height: spacing),
                                   Text(
                                     'No se encontraron propiedades',
                                     style: TextStyle(
-                                      fontSize: titleFontSize,
-                                      fontWeight: FontWeight.w700,
+                                      fontSize:
+                                          ResponsiveUtils.getResponsiveFontSize(
+                                            context,
+                                            baseFontSize: 24,
+                                          ),
+                                      fontWeight: FontWeight.bold,
                                       color: AppColors.primaryRed,
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
-                                  SizedBox(height: spacing * 0.5),
+                                  SizedBox(
+                                    height: ResponsiveUtils.getVerticalSpacing(
+                                      context,
+                                      mobile: 16,
+                                      tablet: 20,
+                                      desktop: 24,
+                                    ),
+                                  ),
                                   Text(
-                                    'Intenta ajustar los filtros de búsqueda para encontrar propiedades',
+                                    'Intenta ajustar tus filtros de búsqueda o busca con términos diferentes.',
                                     style: TextStyle(
+                                      fontSize:
+                                          ResponsiveUtils.getResponsiveFontSize(
+                                            context,
+                                            baseFontSize: 16,
+                                          ),
                                       color: Colors.grey[600],
-                                      fontSize: subtitleFontSize,
-                                      height: 1.5,
+                                      height: 1.4,
                                     ),
                                     textAlign: TextAlign.center,
-                                  ),
-                                  SizedBox(height: spacing),
-                                  ElevatedButton.icon(
-                                    onPressed: _clearSearch,
-                                    icon: const Icon(
-                                      Icons.refresh,
-                                      color: Colors.white,
-                                    ),
-                                    label: const Text(
-                                      'Limpiar Filtros',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primaryRed,
-                                      foregroundColor: Colors.white,
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: availableHeight > 400
-                                            ? 24
-                                            : 20,
-                                        vertical: availableHeight > 400
-                                            ? 12
-                                            : 10,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
                                   ),
                                 ],
                               ),
@@ -348,21 +359,58 @@ class _SearchViewState extends State<SearchView> {
                   );
                 }
 
-                return ListView.builder(
-                  padding: EdgeInsets.fromLTRB(
-                    MediaQuery.of(context).size.width * 0.04,
-                    8,
-                    MediaQuery.of(context).size.width * 0.04,
-                    MediaQuery.of(context).padding.bottom + 16,
+                // Lista de propiedades
+                return Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: responsivePadding,
+                    vertical: ResponsiveUtils.getVerticalSpacing(
+                      context,
+                      mobile: 8,
+                      tablet: 12,
+                      desktop: 16,
+                    ),
                   ),
-                  itemCount: propertyProvider.properties.length,
-                  itemBuilder: (context, index) {
-                    final property = propertyProvider.properties[index];
-                    return SearchPropertyCard(
-                      property: property,
-                      onTap: () => context.go('/property/${property.id}'),
-                    );
-                  },
+                  child: ResponsiveUtils.isMobile(context)
+                      ? ListView.separated(
+                          itemCount: propertyProvider.properties.length,
+                          separatorBuilder: (context, index) => SizedBox(
+                            height: ResponsiveUtils.getVerticalSpacing(context),
+                          ),
+                          itemBuilder: (context, index) {
+                            final property = propertyProvider.properties[index];
+                            return SearchPropertyCard(
+                              property: property,
+                              onTap: () =>
+                                  context.go('/property/${property.id}'),
+                            );
+                          },
+                        )
+                      : GridView.builder(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount:
+                                    ResponsiveUtils.isTablet(context) ? 2 : 3,
+                                childAspectRatio:
+                                    ResponsiveUtils.isTablet(context)
+                                    ? 0.75
+                                    : 0.8,
+                                crossAxisSpacing:
+                                    ResponsiveUtils.getHorizontalSpacing(
+                                      context,
+                                    ),
+                                mainAxisSpacing:
+                                    ResponsiveUtils.getVerticalSpacing(context),
+                              ),
+                          itemCount: propertyProvider.properties.length,
+                          itemBuilder: (context, index) {
+                            final property = propertyProvider.properties[index];
+                            return SearchPropertyCard(
+                              property: property,
+                              onTap: () =>
+                                  context.go('/property/${property.id}'),
+                            );
+                          },
+                        ),
                 );
               },
             ),

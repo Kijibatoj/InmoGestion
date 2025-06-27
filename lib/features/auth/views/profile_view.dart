@@ -4,12 +4,17 @@ import 'package:go_router/go_router.dart';
 
 import '../../../providers/auth_provider.dart';
 import '../../shared/widgets/common_app_bar.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/responsive_utils.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final responsivePadding = ResponsiveUtils.getResponsivePadding(context);
+    final maxWidth = ResponsiveUtils.getMaxContentWidth(context);
+
     return Scaffold(
       appBar: const CommonAppBar(
         title: 'Mi Perfil',
@@ -21,137 +26,235 @@ class ProfileView extends StatelessWidget {
           final user = authProvider.currentUser;
 
           if (user == null) {
-            return const Center(child: Text('No hay usuario autenticado'));
+            return Center(
+              child: Text(
+                'No hay usuario autenticado',
+                style: TextStyle(
+                  fontSize: ResponsiveUtils.getResponsiveFontSize(
+                    context,
+                    baseFontSize: 16,
+                  ),
+                ),
+              ),
+            );
           }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // Avatar y datos básicos
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Theme.of(context).primaryColor,
-                        child: Text(
-                          user.name.substring(0, 1).toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+          return Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxWidth),
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(responsivePadding),
+                child: Column(
+                  children: [
+                    // Avatar y datos básicos
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(
+                        ResponsiveUtils.getResponsivePadding(
+                          context,
+                          mobile: 24,
+                          tablet: 30,
+                          desktop: 36,
+                        ),
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryRed.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(
+                          ResponsiveUtils.getBorderRadius(context),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            radius:
+                                ResponsiveUtils.getImageSize(
+                                  context,
+                                  mobile: 50,
+                                  tablet: 60,
+                                  desktop: 70,
+                                ) /
+                                2,
+                            backgroundColor: AppColors.primaryRed,
+                            child: Text(
+                              user.name.substring(0, 1).toUpperCase(),
+                              style: TextStyle(
+                                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                  context,
+                                  baseFontSize: 36,
+                                ),
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
+                          SizedBox(
+                            height: ResponsiveUtils.getVerticalSpacing(context),
+                          ),
+                          Text(
+                            user.name,
+                            style: TextStyle(
+                              fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                context,
+                                baseFontSize: 22,
+                              ),
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryRed,
+                            ),
+                          ),
+                          SizedBox(
+                            height: ResponsiveUtils.getVerticalSpacing(
+                              context,
+                              mobile: 8,
+                              tablet: 10,
+                              desktop: 12,
+                            ),
+                          ),
+                          Text(
+                            user.email,
+                            style: TextStyle(
+                              fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                context,
+                                baseFontSize: 16,
+                              ),
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(
+                      height: ResponsiveUtils.getVerticalSpacing(
+                        context,
+                        mobile: 24,
+                        tablet: 30,
+                        desktop: 36,
+                      ),
+                    ),
+
+                    // Información del perfil
+                    _ProfileSection(
+                      title: 'Información Personal',
+                      children: [
+                        _ProfileItem(
+                          icon: Icons.person,
+                          label: 'Nombre',
+                          value: user.name,
+                        ),
+                        _ProfileItem(
+                          icon: Icons.email,
+                          label: 'Email',
+                          value: user.email,
+                        ),
+                        _ProfileItem(
+                          icon: Icons.phone,
+                          label: 'Teléfono',
+                          value: user.phone ?? 'No especificado',
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(
+                      height: ResponsiveUtils.getVerticalSpacing(
+                        context,
+                        mobile: 24,
+                        tablet: 30,
+                        desktop: 36,
+                      ),
+                    ),
+
+                    // Acciones
+                    _ProfileSection(
+                      title: 'Acciones',
+                      children: [
+                        _ResponsiveListTile(
+                          leading: Icon(
+                            Icons.edit,
+                            color: AppColors.primaryRed,
+                          ),
+                          title: 'Editar Perfil',
+                          onTap: () {
+                            _showEditProfileDialog(context, authProvider);
+                          },
+                        ),
+                        _ResponsiveListTile(
+                          leading: Icon(
+                            Icons.lock,
+                            color: AppColors.primaryRed,
+                          ),
+                          title: 'Cambiar Contraseña',
+                          onTap: () {
+                            _showChangePasswordDialog(context, authProvider);
+                          },
+                        ),
+                        Divider(color: Colors.grey[300], thickness: 1),
+                        _ResponsiveListTile(
+                          leading: const Icon(Icons.logout, color: Colors.red),
+                          title: 'Cerrar Sesión',
+                          titleColor: Colors.red,
+                          onTap: () {
+                            _showLogoutDialog(context, authProvider);
+                          },
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(
+                      height: ResponsiveUtils.getVerticalSpacing(
+                        context,
+                        mobile: 24,
+                        tablet: 30,
+                        desktop: 36,
+                      ),
+                    ),
+
+                    // Información de la app
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(responsivePadding),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: BorderRadius.circular(
+                          ResponsiveUtils.getBorderRadius(context),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        user.name,
-                        style: Theme.of(context).textTheme.headlineSmall,
+                      child: Column(
+                        children: [
+                          Text(
+                            'InmoGestion',
+                            style: TextStyle(
+                              fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                context,
+                                baseFontSize: 18,
+                              ),
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryRed,
+                            ),
+                          ),
+                          SizedBox(
+                            height: ResponsiveUtils.getVerticalSpacing(
+                              context,
+                              mobile: 4,
+                              tablet: 6,
+                              desktop: 8,
+                            ),
+                          ),
+                          Text(
+                            'Versión 1.0.0',
+                            style: TextStyle(
+                              fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                context,
+                                baseFontSize: 14,
+                              ),
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        user.email,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Información del perfil
-                _ProfileSection(
-                  title: 'Información Personal',
-                  children: [
-                    _ProfileItem(
-                      icon: Icons.person,
-                      label: 'Nombre',
-                      value: user.name,
-                    ),
-                    _ProfileItem(
-                      icon: Icons.email,
-                      label: 'Email',
-                      value: user.email,
-                    ),
-                    _ProfileItem(
-                      icon: Icons.phone,
-                      label: 'Teléfono',
-                      value: user.phone ?? 'No especificado',
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 24),
-
-                // Acciones
-                _ProfileSection(
-                  title: 'Acciones',
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.edit),
-                      title: const Text('Editar Perfil'),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        _showEditProfileDialog(context, authProvider);
-                      },
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.lock),
-                      title: const Text('Cambiar Contraseña'),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        _showChangePasswordDialog(context, authProvider);
-                      },
-                    ),
-                    const Divider(),
-                    ListTile(
-                      leading: const Icon(Icons.logout, color: Colors.red),
-                      title: const Text(
-                        'Cerrar Sesión',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                      onTap: () {
-                        _showLogoutDialog(context, authProvider);
-                      },
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                // Información de la app
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[50],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        'InmoGestion',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Versión 1.0.0',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
           );
         },
@@ -170,23 +273,65 @@ class ProfileView extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Editar Perfil'),
+        title: Text(
+          'Editar Perfil',
+          style: TextStyle(
+            fontSize: ResponsiveUtils.getResponsiveFontSize(
+              context,
+              baseFontSize: 18,
+            ),
+            fontWeight: FontWeight.bold,
+            color: AppColors.primaryRed,
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                  context,
+                  baseFontSize: 16,
+                ),
+              ),
+              decoration: InputDecoration(
                 labelText: 'Nombre',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveUtils.getBorderRadius(context),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveUtils.getBorderRadius(context),
+                  ),
+                  borderSide: BorderSide(color: AppColors.primaryRed, width: 2),
+                ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: ResponsiveUtils.getVerticalSpacing(context)),
             TextField(
               controller: phoneController,
-              decoration: const InputDecoration(
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                  context,
+                  baseFontSize: 16,
+                ),
+              ),
+              decoration: InputDecoration(
                 labelText: 'Teléfono',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveUtils.getBorderRadius(context),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveUtils.getBorderRadius(context),
+                  ),
+                  borderSide: BorderSide(color: AppColors.primaryRed, width: 2),
+                ),
               ),
             ),
           ],
@@ -194,23 +339,45 @@ class ProfileView extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            style: TextButton.styleFrom(foregroundColor: Colors.grey[600]),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                  context,
+                  baseFontSize: 14,
+                ),
+              ),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
-              final success = await authProvider.updateProfile(
+              await authProvider.updateProfile(
                 name: nameController.text,
-                phone: phoneController.text,
+                phone: phoneController.text.isNotEmpty
+                    ? phoneController.text
+                    : null,
               );
-
-              if (success && context.mounted) {
+              if (context.mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Perfil actualizado')),
                 );
               }
             },
-            child: const Text('Guardar'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryRed,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(
+              'Guardar',
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                  context,
+                  baseFontSize: 14,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -221,41 +388,73 @@ class ProfileView extends StatelessWidget {
     BuildContext context,
     AuthProvider authProvider,
   ) {
-    final currentPasswordController = TextEditingController();
     final newPasswordController = TextEditingController();
     final confirmPasswordController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Cambiar Contraseña'),
+        title: Text(
+          'Cambiar Contraseña',
+          style: TextStyle(
+            fontSize: ResponsiveUtils.getResponsiveFontSize(
+              context,
+              baseFontSize: 18,
+            ),
+            fontWeight: FontWeight.bold,
+            color: AppColors.primaryRed,
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              controller: currentPasswordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Contraseña actual',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
               controller: newPasswordController,
               obscureText: true,
-              decoration: const InputDecoration(
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                  context,
+                  baseFontSize: 16,
+                ),
+              ),
+              decoration: InputDecoration(
                 labelText: 'Nueva contraseña',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveUtils.getBorderRadius(context),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveUtils.getBorderRadius(context),
+                  ),
+                  borderSide: BorderSide(color: AppColors.primaryRed, width: 2),
+                ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: ResponsiveUtils.getVerticalSpacing(context)),
             TextField(
               controller: confirmPasswordController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Confirmar contraseña',
-                border: OutlineInputBorder(),
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                  context,
+                  baseFontSize: 16,
+                ),
+              ),
+              decoration: InputDecoration(
+                labelText: 'Confirmar nueva contraseña',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveUtils.getBorderRadius(context),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(
+                    ResponsiveUtils.getBorderRadius(context),
+                  ),
+                  borderSide: BorderSide(color: AppColors.primaryRed, width: 2),
+                ),
               ),
             ),
           ],
@@ -263,7 +462,16 @@ class ProfileView extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            style: TextButton.styleFrom(foregroundColor: Colors.grey[600]),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                  context,
+                  baseFontSize: 14,
+                ),
+              ),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -279,14 +487,32 @@ class ProfileView extends StatelessWidget {
                 password: newPasswordController.text,
               );
 
-              if (success && context.mounted) {
+              if (context.mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Contraseña actualizada')),
+                  SnackBar(
+                    content: Text(
+                      success
+                          ? 'Contraseña actualizada'
+                          : 'Error al actualizar contraseña',
+                    ),
+                  ),
                 );
               }
             },
-            child: const Text('Cambiar'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryRed,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(
+              'Cambiar',
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                  context,
+                  baseFontSize: 14,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -297,23 +523,59 @@ class ProfileView extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Cerrar Sesión'),
-        content: const Text('¿Estás seguro de que quieres cerrar sesión?'),
+        title: Text(
+          'Cerrar Sesión',
+          style: TextStyle(
+            fontSize: ResponsiveUtils.getResponsiveFontSize(
+              context,
+              baseFontSize: 18,
+            ),
+            fontWeight: FontWeight.bold,
+            color: AppColors.primaryRed,
+          ),
+        ),
+        content: Text(
+          '¿Estás seguro de que quieres cerrar sesión?',
+          style: TextStyle(
+            fontSize: ResponsiveUtils.getResponsiveFontSize(
+              context,
+              baseFontSize: 16,
+            ),
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            style: TextButton.styleFrom(foregroundColor: Colors.grey[600]),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                  context,
+                  baseFontSize: 14,
+                ),
+              ),
+            ),
           ),
           ElevatedButton(
-            onPressed: () async {
-              await authProvider.logout();
-              if (context.mounted) {
-                Navigator.pop(context);
-                context.go('/login');
-              }
+            onPressed: () {
+              Navigator.pop(context);
+              authProvider.logout();
+              context.go('/login');
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Cerrar Sesión'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(
+              'Cerrar Sesión',
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                  context,
+                  baseFontSize: 14,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -333,13 +595,15 @@ class _ProfileSection extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(
+          ResponsiveUtils.getBorderRadius(context),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -347,10 +611,19 @@ class _ProfileSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(
+              ResponsiveUtils.getResponsivePadding(context),
+            ),
             child: Text(
               title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                  context,
+                  baseFontSize: 18,
+                ),
+                fontWeight: FontWeight.bold,
+                color: AppColors.primaryRed,
+              ),
             ),
           ),
           ...children,
@@ -374,27 +647,102 @@ class _ProfileItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(
+        horizontal: ResponsiveUtils.getResponsivePadding(context),
+        vertical: ResponsiveUtils.getVerticalSpacing(
+          context,
+          mobile: 8,
+          tablet: 10,
+          desktop: 12,
+        ),
+      ),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Colors.grey[600]),
-          const SizedBox(width: 12),
+          Icon(
+            icon,
+            color: AppColors.primaryRed,
+            size: ResponsiveUtils.getResponsiveFontSize(
+              context,
+              baseFontSize: 20,
+            ),
+          ),
+          SizedBox(width: ResponsiveUtils.getHorizontalSpacing(context)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: ResponsiveUtils.getResponsiveFontSize(
+                      context,
+                      baseFontSize: 12,
+                    ),
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-                Text(value, style: Theme.of(context).textTheme.bodyLarge),
+                SizedBox(
+                  height: ResponsiveUtils.getVerticalSpacing(
+                    context,
+                    mobile: 2,
+                    tablet: 3,
+                    desktop: 4,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: ResponsiveUtils.getResponsiveFontSize(
+                      context,
+                      baseFontSize: 16,
+                    ),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ResponsiveListTile extends StatelessWidget {
+  final Widget leading;
+  final String title;
+  final Color? titleColor;
+  final VoidCallback onTap;
+
+  const _ResponsiveListTile({
+    required this.leading,
+    required this.title,
+    this.titleColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: leading,
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: ResponsiveUtils.getResponsiveFontSize(
+            context,
+            baseFontSize: 16,
+          ),
+          color: titleColor,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      trailing: Icon(
+        Icons.arrow_forward_ios,
+        size: ResponsiveUtils.getResponsiveFontSize(context, baseFontSize: 16),
+        color: titleColor ?? Colors.grey[600],
+      ),
+      onTap: onTap,
     );
   }
 }

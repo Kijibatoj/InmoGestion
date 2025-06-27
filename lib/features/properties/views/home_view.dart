@@ -204,260 +204,220 @@ class DashboardPage extends StatelessWidget with ResponsiveMixin {
         automaticallyImplyLeading: false,
         elevation: 2,
       ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: maxWidth),
-            child: Padding(
-              padding: EdgeInsets.all(responsivePadding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Consumer<AuthProvider>(
-                    builder: (context, authProvider, child) {
-                      return Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            gradient: LinearGradient(
-                              colors: [
-                                AppColors.primaryRed.withOpacity(0.1),
-                                AppColors.primaryRed.withOpacity(0.05),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxWidth),
+              child: Padding(
+                padding: EdgeInsets.all(responsivePadding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Consumer<AuthProvider>(
+                      builder: (context, authProvider, child) {
+                        return Card(
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              ResponsiveUtils.getBorderRadius(context),
                             ),
                           ),
-                          child: Padding(
-                            padding: EdgeInsets.all(isMobile ? 16 : 20),
-                            child: isLandscape && !isMobile
-                                ? Row(
-                                    children: [
-                                      _buildUserAvatar(authProvider),
-                                      SizedBox(width: responsivePadding),
-                                      Expanded(
-                                        child: _buildUserInfo(
-                                          context,
-                                          authProvider,
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                                : Column(
-                                    children: [
-                                      _buildUserAvatar(authProvider),
-                                      const SizedBox(height: 16),
-                                      _buildUserInfo(context, authProvider),
-                                    ],
-                                  ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-
-                  SizedBox(height: ResponsiveUtils.getVerticalSpacing(context)),
-
-                  Text(
-                    'Panel de Control',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primaryRed,
-                      fontSize: ResponsiveUtils.getResponsiveFontSize(
-                        context,
-                        baseFontSize: 24,
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(
-                    height: ResponsiveUtils.getVerticalSpacing(
-                      context,
-                      mobile: 16,
-                      tablet: 20,
-                      desktop: 24,
-                    ),
-                  ),
-
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(isMobile ? 16 : 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.info_outline,
-                                color: AppColors.primaryRed,
-                                size: isMobile ? 24 : 28,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(
+                                ResponsiveUtils.getBorderRadius(context),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  'Información del Sistema',
-                                  style: Theme.of(context).textTheme.titleMedium
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.primaryRed,
-                                        fontSize:
-                                            ResponsiveUtils.getResponsiveFontSize(
-                                              context,
-                                              baseFontSize: 18,
-                                            ),
-                                      ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Sistema de gestión inmobiliaria para administrar tus propiedades de manera eficiente.',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  color: Colors.grey[700],
-                                  height: 1.5,
-                                  fontSize:
-                                      ResponsiveUtils.getResponsiveFontSize(
-                                        context,
-                                        baseFontSize: 14,
-                                      ),
-                                ),
-                          ),
-                          const SizedBox(height: 20),
-
-                          // Accesos rápidos
-                          Text(
-                            'Accesos Rápidos',
-                            style: Theme.of(context).textTheme.titleSmall
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.primaryRed,
-                                  fontSize:
-                                      ResponsiveUtils.getResponsiveFontSize(
-                                        context,
-                                        baseFontSize: 16,
-                                      ),
-                                ),
-                          ),
-                          const SizedBox(height: 12),
-
-                          ResponsiveUtils.shouldUseSingleColumn(context)
-                              ? Column(
-                                  children: _buildQuickAccessButtons(context),
-                                )
-                              : Wrap(
-                                  spacing: 12,
-                                  runSpacing: 12,
-                                  children: _buildQuickAccessButtons(context),
-                                ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(
-                    height: ResponsiveUtils.getVerticalSpacing(
-                      context,
-                      mobile: 16,
-                      tablet: 20,
-                      desktop: 24,
-                    ),
-                  ),
-
-                  // Estadísticas rápidas
-                  Consumer<PropertyProvider>(
-                    builder: (context, propertyProvider, child) {
-                      return Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(isMobile ? 16 : 20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.analytics_outlined,
-                                    color: AppColors.primaryRed,
-                                    size: isMobile ? 24 : 28,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    'Estadísticas',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.primaryRed,
-                                          fontSize:
-                                              ResponsiveUtils.getResponsiveFontSize(
-                                                context,
-                                                baseFontSize: 18,
-                                              ),
-                                        ),
-                                  ),
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.primaryRed.withOpacity(0.1),
+                                  AppColors.primaryRed.withOpacity(0.05),
                                 ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
-                              const SizedBox(height: 16),
-                              ResponsiveUtils.shouldUseSingleColumn(context)
-                                  ? Column(
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.all(responsivePadding),
+                              child: isLandscape && !isMobile
+                                  ? Row(
                                       children: [
-                                        _buildStatCard(
-                                          context,
-                                          'Total Propiedades',
-                                          '${propertyProvider.properties.length}',
-                                          Icons.home_work,
-                                        ),
-                                        const SizedBox(height: 12),
-                                        _buildStatCard(
-                                          context,
-                                          'En Gestión',
-                                          '${propertyProvider.properties.length}',
-                                          Icons.manage_search,
+                                        _buildUserAvatar(authProvider),
+                                        SizedBox(width: responsivePadding),
+                                        Expanded(
+                                          child: _buildUserInfo(
+                                            context,
+                                            authProvider,
+                                          ),
                                         ),
                                       ],
                                     )
-                                  : Row(
+                                  : Column(
                                       children: [
-                                        Expanded(
-                                          child: _buildStatCard(
-                                            context,
-                                            'Total Propiedades',
-                                            '${propertyProvider.properties.length}',
-                                            Icons.home_work,
-                                          ),
+                                        _buildUserAvatar(authProvider),
+                                        SizedBox(
+                                          height:
+                                              ResponsiveUtils.getVerticalSpacing(
+                                                context,
+                                              ),
                                         ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: _buildStatCard(
-                                            context,
-                                            'En Gestión',
-                                            '${propertyProvider.properties.length}',
-                                            Icons.manage_search,
-                                          ),
-                                        ),
+                                        _buildUserInfo(context, authProvider),
                                       ],
                                     ),
-                            ],
+                            ),
                           ),
+                        );
+                      },
+                    ),
+
+                    SizedBox(
+                      height: ResponsiveUtils.getVerticalSpacing(context),
+                    ),
+
+                    Text(
+                      'Panel de Control',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primaryRed,
+                        fontSize: ResponsiveUtils.getResponsiveFontSize(
+                          context,
+                          baseFontSize: 24,
                         ),
-                      );
-                    },
-                  ),
-                ],
+                      ),
+                    ),
+
+                    SizedBox(
+                      height: ResponsiveUtils.getVerticalSpacing(
+                        context,
+                        mobile: 16,
+                        tablet: 20,
+                        desktop: 24,
+                      ),
+                    ),
+
+                    Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          ResponsiveUtils.getBorderRadius(context),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(responsivePadding),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.info_outline,
+                                  color: AppColors.primaryRed,
+                                  size: ResponsiveUtils.getResponsiveFontSize(
+                                    context,
+                                    baseFontSize: 24,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width:
+                                      ResponsiveUtils.getHorizontalSpacing(
+                                        context,
+                                      ) *
+                                      0.5,
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    'Información del Sistema',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.primaryRed,
+                                      fontSize:
+                                          ResponsiveUtils.getResponsiveFontSize(
+                                            context,
+                                            baseFontSize: 18,
+                                          ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height: ResponsiveUtils.getVerticalSpacing(
+                                context,
+                              ),
+                            ),
+                            Text(
+                              'Sistema de gestión inmobiliaria para administrar tus propiedades de manera eficiente.',
+                              style: TextStyle(
+                                color: Colors.grey[700],
+                                height: 1.5,
+                                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                  context,
+                                  baseFontSize: 14,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              height: ResponsiveUtils.getVerticalSpacing(
+                                context,
+                                mobile: 20,
+                                tablet: 24,
+                                desktop: 28,
+                              ),
+                            ),
+
+                            // Accesos rápidos
+                            Text(
+                              'Accesos Rápidos',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryRed,
+                                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                  context,
+                                  baseFontSize: 16,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              height: ResponsiveUtils.getVerticalSpacing(
+                                context,
+                                mobile: 12,
+                                tablet: 16,
+                                desktop: 20,
+                              ),
+                            ),
+
+                            ResponsiveUtils.shouldUseSingleColumn(context)
+                                ? Column(
+                                    children: _buildQuickAccessButtons(context),
+                                  )
+                                : Wrap(
+                                    spacing:
+                                        ResponsiveUtils.getHorizontalSpacing(
+                                          context,
+                                        ) *
+                                        0.75,
+                                    runSpacing:
+                                        ResponsiveUtils.getVerticalSpacing(
+                                          context,
+                                        ) *
+                                        0.75,
+                                    children: _buildQuickAccessButtons(context),
+                                  ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(
+                      height: ResponsiveUtils.getVerticalSpacing(
+                        context,
+                        mobile: 20,
+                        tablet: 24,
+                        desktop: 28,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

@@ -295,46 +295,76 @@ class _PropertyListViewState extends State<PropertyListView> {
             },
             color: AppColors.primaryRed,
             backgroundColor: Colors.white,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final shouldUseList = ResponsiveUtils.shouldUseSingleColumn(
-                  context,
-                );
+            child: SafeArea(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final shouldUseList = ResponsiveUtils.shouldUseSingleColumn(
+                    context,
+                  );
 
-                if (shouldUseList) {
-                  return ListView.builder(
-                    padding: EdgeInsets.all(responsivePadding),
-                    itemCount: propertyProvider.properties.length,
-                    itemBuilder: (context, index) {
-                      final property = propertyProvider.properties[index];
-                      return PropertyCard(
-                        property: property,
-                        onTap: () =>
-                            context.go('/property-detail/${property.id}'),
-                      );
-                    },
-                  );
-                } else {
-                  return GridView.builder(
-                    padding: EdgeInsets.all(responsivePadding),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: ResponsiveUtils.getGridColumns(context),
-                      childAspectRatio: 0.8,
-                      crossAxisSpacing: responsivePadding,
-                      mainAxisSpacing: responsivePadding,
-                    ),
-                    itemCount: propertyProvider.properties.length,
-                    itemBuilder: (context, index) {
-                      final property = propertyProvider.properties[index];
-                      return PropertyCard(
-                        property: property,
-                        onTap: () =>
-                            context.go('/property-detail/${property.id}'),
-                      );
-                    },
-                  );
-                }
-              },
+                  if (shouldUseList) {
+                    return ListView.separated(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: responsivePadding,
+                        vertical: ResponsiveUtils.getVerticalSpacing(
+                          context,
+                          mobile: 16,
+                          tablet: 20,
+                          desktop: 24,
+                        ),
+                      ),
+                      itemCount: propertyProvider.properties.length,
+                      separatorBuilder: (context, index) => SizedBox(
+                        height: ResponsiveUtils.getVerticalSpacing(
+                          context,
+                          mobile: 12,
+                          tablet: 16,
+                          desktop: 20,
+                        ),
+                      ),
+                      itemBuilder: (context, index) {
+                        final property = propertyProvider.properties[index];
+                        return PropertyCard(
+                          property: property,
+                          onTap: () =>
+                              context.go('/property-detail/${property.id}'),
+                        );
+                      },
+                    );
+                  } else {
+                    return GridView.builder(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: responsivePadding,
+                        vertical: ResponsiveUtils.getVerticalSpacing(
+                          context,
+                          mobile: 16,
+                          tablet: 20,
+                          desktop: 24,
+                        ),
+                      ),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: ResponsiveUtils.getGridColumns(context),
+                        childAspectRatio: 0.8,
+                        crossAxisSpacing: ResponsiveUtils.getHorizontalSpacing(
+                          context,
+                        ),
+                        mainAxisSpacing: ResponsiveUtils.getVerticalSpacing(
+                          context,
+                        ),
+                      ),
+                      itemCount: propertyProvider.properties.length,
+                      itemBuilder: (context, index) {
+                        final property = propertyProvider.properties[index];
+                        return PropertyCard(
+                          property: property,
+                          onTap: () =>
+                              context.go('/property-detail/${property.id}'),
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
             ),
           );
         },
