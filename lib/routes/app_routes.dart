@@ -6,8 +6,6 @@ import '../features/auth/views/register_view.dart';
 import '../features/properties/views/home_view.dart';
 import '../features/properties/views/property_detail_view.dart';
 import '../features/properties/views/property_form_view.dart';
-import '../features/onboarding/onboarding_service.dart';
-import '../features/onboarding/onboarding_view.dart';
 
 class AppRoutes {
   static const String login = '/login';
@@ -30,18 +28,8 @@ class AppRoutes {
   static String get homeProfile => homeWithTab(profileTab);
 
   static final GoRouter router = GoRouter(
-    initialLocation: '/',
+    initialLocation: login,
     redirect: (context, state) async {
-      final onboardingComplete = await OnboardingService.isOnboardingComplete();
-
-      // Si no ha completado el onboarding, redirigir al onboarding
-      if (!onboardingComplete) {
-        if (state.matchedLocation != '/onboarding') {
-          return '/onboarding';
-        }
-        return null; // Ya está en onboarding
-      }
-
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final isAuthenticated = authProvider.isAuthenticated;
       final isLoading = authProvider.isLoading;
@@ -50,14 +38,8 @@ class AppRoutes {
 
       final isAuthRoute =
           state.matchedLocation == login || state.matchedLocation == register;
-      final isOnboardingRoute = state.matchedLocation == '/onboarding';
 
-      // Si ya completó onboarding pero está en la página de onboarding, redirigir
-      if (onboardingComplete && isOnboardingRoute) {
-        return isAuthenticated ? home : login;
-      }
-
-      if (!isAuthenticated && !isAuthRoute && !isOnboardingRoute) {
+      if (!isAuthenticated && !isAuthRoute) {
         return login;
       }
 
@@ -68,11 +50,6 @@ class AppRoutes {
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/onboarding',
-        name: 'onboarding',
-        builder: (context, state) => const OnboardingView(),
-      ),
       GoRoute(
         path: login,
         name: 'login',
